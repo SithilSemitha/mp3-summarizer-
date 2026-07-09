@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Summary Feature</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .box { border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa; }
+        button { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        #summaryResult { margin-top: 20px; white-space: pre-line; background: #eef; padding: 15px; border-left: 5px solid #0070f3; }
+    </style>
+</head>
+<body>
+
+    <h2>MP3 to Bullet Points</h2>
+    <p>Upload an MP3 recording containing mixed English and Singlish speech to get a structured summary.</p>
+
+    <div class="box">
+        <input type="file" id="audioFile" accept="audio/mp3" />
+        <button onclick="generateSummary()">Generate Summary</button>
+        <p id="status" style="color: #555; margin-top: 10px;"></p>
+    </div>
+
+    <div id="summaryResult" style="display:none;"></div>
+
+    <script>
+        async function generateSummary() {
+            const fileInput = document.getElementById('audioFile');
+            const status = document.getElementById('status');
+            const resultBox = document.getElementById('summaryResult');
+
+            if (fileInput.files.length === 0) {
+                alert("Please select an MP3 file first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('audio', fileInput.files[0]);
+
+            status.innerText = "Uploading audio... AI is transcribing and translating conversational Singlish...";
+            resultBox.style.display = "none";
+
+            try {
+                const response = await fetch('/api/summarize-audio', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    status.innerText = "Processing Complete!";
+                    resultBox.innerText = data.summary;
+                    resultBox.style.display = "block";
+                } else {
+                    status.innerText = "Error: " + data.error;
+                }
+            } catch (err) {
+                status.innerText = "A network error occurred.";
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>
